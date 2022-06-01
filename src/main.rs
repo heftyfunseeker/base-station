@@ -1,55 +1,42 @@
-use yew::prelude::*;
-
 mod anthem;
+
 use crate::anthem::AnthemIP;
+use rocket::State;
+use std::sync::{Arc, Mutex};
 
-enum Msg {
-    AddOne,
+#[macro_use]
+extern crate rocket;
+
+#[get("/")]
+fn index() -> &'static str {
+    "Anthem IP Controller"
 }
 
-struct Model {
-    value: i64,
+#[get("/avr_on")]
+fn avr_on(avr: &State<Arc<Mutex<AnthemIP>>>) -> &'static str {
+    let _ = avr.lock().unwrap().set_power(true);
+    "powered on"
 }
 
-impl Component for Model {
-    type Message = Msg;
-    type Properties = ();
-
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self { value: 0 }
-    }
-
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::AddOne => {
-                self.value += 1;
-                // the value has changed so we need to
-                // re-render for it to appear on the page
-                true
-            }
-        }
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        // This gives us a component's "`Scope`" which allows us to send messages, etc to the component.
-        html! {
-            <div class="toggle-container">
-            <div> {"AVR Off"} </div>
-             <label class="switch">
-               <input type="checkbox" onclick={
-                   ctx.link().callback(|_| {
-                       Msg::AddOne
-                   })
-               }/>
-               <span class="slider round"></span>
-             </label>
-            <div> {"AVR On"} </div>
-            </div>
-        }
-    }
+#[get("/avr_off")]
+fn avr_off(avr: &State<Arc<Mutex<AnthemIP>>>) -> &'static str {
+    let _ = avr.lock().unwrap().set_power(false);
+    "powered off"
 }
 
-fn main() {
-    //let av = AnthemIP::new("ws://192.168.0.28:8080");
-    yew::start_app::<Model>();
+#[get("/avr_set_input/<input_num>")]
+fn avr_set_input(avr: &State<Arc<Mutex<AnthemIP>>>, input_num: u8) -> &'static str {
+    let _ = avr.lock().unwrap().set_current_input(input_num);
+    "set current input"
+}
+
+#[launch]
+fn rocket() -> _ {
+    let mut anthem = AnthemIP::new("192.168.0.28", "14999");
+    rocket::build()
+        .manage(Arc::new(Mutex::new(anthem)))
+        .mount("/", routes![index])
+        .mount("/", routes![avr_on])
+        .mount("/", routes![avr_off])
+        .mount("/", routes![avr_set_input])
 }

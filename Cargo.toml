@@ -6,7 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-getrandom = { version = "0.2.3", features = ["js"] }
-yew = "0.19.0"
-tungstenite = "*"
-url = "*"
+# log = "0.4.6"
+rocket = "0.5.0-rc.2"
