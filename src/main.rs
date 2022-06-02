@@ -30,6 +30,18 @@ fn avr_set_input(avr: &State<Arc<Mutex<AnthemIP>>>, input_num: u8) -> &'static s
     "set current input"
 }
 
+#[get("/avr_vol_down")]
+fn avr_volume_down(avr: &State<Arc<Mutex<AnthemIP>>>) -> &'static str {
+    let _ = avr.lock().unwrap().volume_down();
+    "vol down"
+}
+
+#[get("/avr_vol_up")]
+fn avr_volume_up(avr: &State<Arc<Mutex<AnthemIP>>>) -> &'static str {
+    let _ = avr.lock().unwrap().volume_up();
+    "vol up"
+}
+
 #[launch]
 fn rocket() -> _ {
     let mut anthem = AnthemIP::new("192.168.0.28", "14999");
@@ -39,4 +51,6 @@ fn rocket() -> _ {
         .mount("/", routes![avr_on])
         .mount("/", routes![avr_off])
         .mount("/", routes![avr_set_input])
+        .mount("/", routes![avr_volume_down])
+        .mount("/", routes![avr_volume_up])
 }

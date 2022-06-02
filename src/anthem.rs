@@ -21,6 +21,8 @@ enum AnthemCommand {
     QueryActiveInputName(u8), // input number
     Zone1Power(bool),
     Zone1CurrentInput(u8), // input number
+    Zone1VolumeDown,
+    Zone1VolumeUp,
 }
 
 impl From<AnthemCommand> for String {
@@ -34,6 +36,8 @@ impl From<AnthemCommand> for String {
             AnthemCommand::QueryActiveInputName(input_num) => format!("IS{}IN", input_num),
             AnthemCommand::Zone1Power(power_on) => format!("Z1POW{}", u32::from(power_on)),
             AnthemCommand::Zone1CurrentInput(input_num) => format!("Z1INP{}", input_num),
+            AnthemCommand::Zone1VolumeDown => "Z1VDN".into(),
+            AnthemCommand::Zone1VolumeUp => "Z1VUP".into(),
         }
     }
 }
@@ -58,6 +62,14 @@ impl AnthemIP {
 
     pub fn set_current_input(&mut self, input_num: u8) -> AnthemResult {
         self.write_cmd(AnthemCommand::Zone1CurrentInput(input_num))
+    }
+
+    pub fn volume_down(&mut self) -> AnthemResult {
+        self.write_cmd(AnthemCommand::Zone1VolumeDown)
+    }
+
+    pub fn volume_up(&mut self) -> AnthemResult {
+        self.write_cmd(AnthemCommand::Zone1VolumeUp)
     }
 
     pub fn get_model(&mut self) -> AnthemResult {
@@ -95,9 +107,7 @@ impl AnthemIP {
     }
 
     fn write_cmd_string(&mut self, cmd: &str) -> AnthemResult {
-        let result = self
-            .stream
-            .write_all(cmd.as_bytes());
+        let result = self.stream.write_all(cmd.as_bytes());
         match result {
             Ok(_) => Ok(()),
             _ => Err(AnthemError::Io),
